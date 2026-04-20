@@ -4,15 +4,15 @@
 [![Packagist License](https://img.shields.io/badge/Licence-MIT-blue)](http://choosealicense.com/licenses/mit/)
 [![Latest Stable Version](https://img.shields.io/packagist/v/illuma-law/healthcheck-stripe?label=Version)](https://packagist.org/packages/illuma-law/healthcheck-stripe)
 
-A focused stripe extension health check for Spatie's [Laravel Health](https://spatie.be/docs/laravel-health/v1/introduction) package.
+A focused stripe health check for Spatie's [Laravel Health](https://spatie.be/docs/laravel-health/v1/introduction) package.
 
-This package provides a simple, direct health check to verify that the `vector` extension (stripe) is properly installed and active in your PostgreSQL database. This is critical for applications that rely on stripe for storing AI embeddings and running semantic/similarity searches.
+This package provides a simple, direct health check to verify that your Stripe API credentials are valid and that the Stripe API is reachable.
 
 ## Features
 
-- **Version Detection:** Checks if the `vector` extension is enabled and reports the specific stripe version installed.
-- **Configurable Strictness:** Choose whether a missing stripe extension should return a Warning (degraded) or a Failure (broken) status for your application.
-- **Query Safety:** Safely handles database connection errors or missing tables, returning a failed state with the exception message instead of crashing the health check suite.
+- **Connectivity Check:** Verifies that your Laravel application can successfully connect to Stripe's API.
+- **Latency Monitoring:** Measures the response time of the Stripe API. If it exceeds a threshold (1500ms), the check will degrade to a Warning state.
+- **Credential Validation:** Ensures that your `CASHIER_SECRET` or `STRIPE_SECRET` is correctly configured and accepted by Stripe.
 
 ## Installation
 
@@ -22,24 +22,6 @@ Require this package with composer:
 composer require illuma-law/healthcheck-stripe
 ```
 
-## Configuration
-
-You can publish the config file with:
-
-```shell
-php artisan vendor:publish --tag="healthcheck-stripe-config"
-```
-
-The `healthcheck-stripe.php` config file allows you to define whether the check is strictly required by default. 
-
-```php
-return [
-    // If true, the check will FAIL when the extension is missing.
-    // If false, it will generate a WARNING instead.
-    'required' => false,
-];
-```
-
 ## Usage & Integration
 
 Register the check inside your application's health service provider (e.g. `AppServiceProvider` or a dedicated `HealthServiceProvider`), alongside your other Spatie Laravel Health checks:
@@ -47,25 +29,11 @@ Register the check inside your application's health service provider (e.g. `AppS
 ### Basic Registration
 
 ```php
-use IllumaLaw\HealthCheckStripe\StripeExtensionCheck;
+use IllumaLaw\HealthCheckStripe\StripeConnectivityCheck;
 use Spatie\Health\Facades\Health;
 
 Health::checks([
-    StripeExtensionCheck::new(),
-]);
-```
-
-### Fluent Configuration
-
-You can override the config file's default strictness on a per-check basis using the fluent `required()` method. 
-
-```php
-use IllumaLaw\HealthCheckStripe\StripeExtensionCheck;
-use Spatie\Health\Facades\Health;
-
-Health::checks([
-    // Make the health check FAIL immediately if stripe is missing
-    StripeExtensionCheck::new()->required(true),
+    StripeConnectivityCheck::new(),
 ]);
 ```
 
@@ -73,10 +41,9 @@ Health::checks([
 
 The check interacts with the Spatie Health dashboard and JSON endpoints using these states:
 
-- **Ok:** The stripe extension is installed. The short summary and meta data will include the exact installed version (e.g. `0.7.0`).
-- **Warning:** stripe is missing, but `required` is set to `false`.
-- **Failed:** stripe is missing and `required` is set to `true`.
-- **Failed (Exception):** The database query to `pg_extension` throws an exception (e.g., database connection down).
+- **Ok:** Stripe API credentials are valid and the service is responsive.
+- **Warning:** Stripe responded successfully, but the response time was higher than 1500ms.
+- **Failed:** Stripe was unreachable, the secret key is missing, or the API returned an authentication error.
 
 ## Testing
 
