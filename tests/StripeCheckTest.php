@@ -22,8 +22,8 @@ it('succeeds when stripe api returns balance', function () {
         'livemode' => false,
         'object' => 'balance',
         'available' => [
-            (object) ['currency' => 'usd', 'amount' => 1000]
-        ]
+            (object) ['currency' => 'usd', 'amount' => 1000],
+        ],
     ]);
 
     $result = $check->run();
