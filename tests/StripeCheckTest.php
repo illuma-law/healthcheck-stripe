@@ -19,8 +19,8 @@ it('succeeds when stripe api returns balance', function () {
 
     $check = Mockery::mock(StripeConnectivityCheck::class)->makePartial()->shouldAllowMockingProtectedMethods();
     $check->shouldReceive('fetchBalance')->once()->andReturn((object) [
-        'livemode' => false,
-        'object' => 'balance',
+        'livemode'  => false,
+        'object'    => 'balance',
         'available' => [
             (object) ['currency' => 'usd', 'amount' => 1000],
         ],

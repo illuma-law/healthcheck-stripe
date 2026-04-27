@@ -35,8 +35,8 @@ class StripeConnectivityCheck extends Check
 
         $meta = [
             'response_time_ms' => $latencyMs,
-            'livemode' => $balance->livemode ?? null,
-            'object' => $balance->object ?? 'balance',
+            'livemode'         => $balance->livemode ?? null,
+            'object'           => $balance->object ?? 'balance',
         ];
 
         if (isset($balance->available) && is_array($balance->available) && $balance->available !== []) {
